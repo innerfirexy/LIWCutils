@@ -1,0 +1,5 @@
+10/24/2016
+Fix liwcdic2007.dic by changing
+line 2130 from "kind	<of>131/125	<of>135/126" to "kind  125 126"
+line 2222 from "like    (02 134)125/464	(02 134)126	253" to "like   2	134	125	464	126	253"
+Following https://github.com/chbrown/lexicons/pull/1/files?short_path=04c6e90
