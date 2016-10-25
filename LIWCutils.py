@@ -1,4 +1,4 @@
-# Contains the LIWCutils class
+# Contains the LIWCdict class
 # Yang Xu
 # 10/24/2016
 
@@ -7,8 +7,8 @@ import pickle
 import re
 import sys
 
-# the LIWCutils class
-class LIWCutils:
+# the LIWCdict class
+class LIWCdict:
     def __init__(self, cat_file, dic_file):
         """
         cat_file: the LIWC category file, e.g., liwccat2007.txt
