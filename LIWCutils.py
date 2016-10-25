@@ -8,7 +8,7 @@ import re
 import sys
 
 # the LIWCdict class
-class LIWCdict:
+class LIWCdict(object):
     def __init__(self, cat_file, dic_file):
         """
         cat_file: the LIWC category file, e.g., liwccat2007.txt
