@@ -52,7 +52,7 @@ class LIWCdict:
                             self._code2lexemes[c] = [lexeme]
 
     # the func that counts the number of LIWC markers
-    def marker_count(self, material, marker, sep=' '):
+    def count_marker(self, material, marker, sep=' '):
         """
         material: str, a piece of text
         marker: str, marker
@@ -63,13 +63,29 @@ class LIWCdict:
         lexemes = self.marker_lexemes(marker)
         unigrams = material.split(sep)
         if len(unigrams) > 1:
-            bigrams = self.bigrams(unigrams=unigrams)
-            return self.marker_count_list(unigrams, lexemes) + self.marker_count_list(bigrams, lexemes)
+            bigrams = self.bigrams(nigrams)
+            return self._count_list(unigrams, lexemes) + self._count_list(bigrams, lexemes)
         else:
-            return self.marker_count_list(unigrams, lexemes)
+            return self._count_list(unigrams, lexemes)
+
+    # the func that counts in batch
+    def count_marker_batch(self, material, markers, sep=' '):
+        """
+        """
+        results = []
+        unigrams = material.split(sep)
+        if len(unigrams) > 1:
+            bigrams = self.bigrams(unigrams)
+            for m in markers:
+                lexemes = self.marker_lexemes(m)
+                results.append(self._count_list(unigrams, lexemes) + self._count_list(bigrams, lexemes))
+        else:
+            for m in markers:
+                results.append(self._count_list(unigrams, lexemes))
+        return results
 
     # the func called in marker_count
-    def marker_count_list(self, words, lexemes):
+    def _count_list(self, words, lexemes):
         """
         words: [str], a list of nigrams or bigrams
         lexemes: [str], a list of lexemes
