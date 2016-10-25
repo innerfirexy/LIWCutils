@@ -81,6 +81,7 @@ class LIWCdict:
                 results.append(self._count_list(unigrams, lexemes) + self._count_list(bigrams, lexemes))
         else:
             for m in markers:
+                lexemes = self.marker_lexemes(m)
                 results.append(self._count_list(unigrams, lexemes))
         return results
 
