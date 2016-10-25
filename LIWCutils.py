@@ -52,33 +52,59 @@ class LIWCutils:
                             self._code2lexemes[c] = [lexeme]
 
     # the func that counts the number of LIWC markers
-    def count_markers(self, wl, dic):
+    def marker_count(self, material, marker, sep=' '):
         """
-        wl: word list to be counted
-        dic: a dict object whose keys are LIWC categories, and values are corresponding lexemes
+        material: str, a piece of text
+        marker: str, marker
         """
-        # to lower
-        wl = [w.lower() for w in wl]
-        # combine the negation "n't" in wl to the preceding word
-        wl_new = []
-        i = 0
-        while i < len(wl):
-            if i+1 < len(wl):
-                if wl[i+1] == "n\'t":
-                    wl_new.append(wl[i] + wl[i+1])
-                    i += 2
-                else:
-                    wl_new.append(wl[i])
-                    i += 1
-            else:
-                wl_new.append(wl[i])
-                break
-        # count for each category
-        res = {key: 0 for key in dic}
-        for key, val in dic.items():
-            res[key] = sum([len(fnmatch.filter(wl_new, lex)) for lex in val])
-        # return
-        return res
+        assert isinstance(material, str) and len(material)>0
+        assert isinstance(marker, str) and self.is_marker(marker)
+
+        lexemes = self.marker_lexemes(marker)
+        unigrams = material.split(sep)
+        if len(unigrams) > 1:
+            bigrams = self.bigrams(unigrams=unigrams)
+            return self.marker_count_list(unigrams, lexemes) + self.marker_count_list(bigrams, lexemes)
+        else:
+            return self.marker_count_list(unigrams, lexemes)
+
+    # the func called in marker_count
+    def marker_count_list(self, words, lexemes):
+        """
+        words: [str], a list of nigrams or bigrams
+        lexemes: [str], a list of lexemes
+        """
+        assert isinstance(words, list)
+        assert isinstance(lexemes, list)
+        words = [w.lower() for w in words]
+        return sum([len(fnmatch.filter(words, lex)) for lex in lexemes])
+
+    # generate bigrams list from unigram list
+    def bigrams(self, unigrams):
+        """
+        unigrams: [str]
+        """
+        assert isinstance(unigrams, list) and len(unigrams)>1
+        bigrams = []
+        for i in range(len(unigrams)-1):
+            bigrams.append(unigrams[i] + unigrams[i+1])
+        return bigrams
+
+    # check if marker is valid
+    def is_marker(self, marker):
+        """
+        marker: str
+        """
+        assert isinstance(marker, str)
+        return marker in self._marker2code
+
+    # check if code is valid
+    def is_code(self, code):
+        """
+        code: str
+        """
+        assert isinstance(code, int)
+        return code in self._code2marker
 
     # the func that get the corresponding lexemes of certain markers
     def marker_lexemes(self, marker):
