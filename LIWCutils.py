@@ -123,6 +123,47 @@ class LIWCdict(object):
         assert isinstance(code, int)
         return code in self._code2marker
 
+    # check if a word is a valid lexeme
+    def is_lexeme(self, word):
+        """
+        word: str
+        """
+        assert isinstance(word, str)
+        return word in self._lexeme2codes
+
+    ##
+    # return the codes of a word
+    def word2codes(self, word, refdict=self._lexeme2codes):
+        """
+        word: str
+        """
+        assert isinstance(word, str)
+        if word in refdict:
+            return refdict[word]
+        else:
+            matched_lexemes = [lex for lex in refdict.keys() if fnmatch.fnmatch(word, lex)]
+            codes = []
+            for lex in matched_lexemes:
+                codes += refdict[lex]
+            if len(codes) == 0:
+                return None
+            else:
+                return codes
+
+    ##
+    # return the markers (short) of a word
+    def word2markers(self, word):
+        """
+        word: str
+        """
+        assert isinstance(word, str)
+        codes = self.word2codes(word)
+        if codes is None:
+            return None
+        else:
+            return [self.code2marker(c) for c in codes]
+
+    ##
     # the func that get the corresponding lexemes of certain markers
     def marker_lexemes(self, marker):
         """
@@ -158,3 +199,30 @@ class LIWCdict(object):
             return self._code2marker[code]
         else:
             return None
+
+    ##
+    # the function that return a piece of text to a series of makers
+    def text2markers(self, text, markerfilter=None):
+        """
+        text: str
+        markerfilter: a list of str
+        """
+        assert isinstance(text, str)
+        # check param
+        if markerfilter is not None:
+            assert isinstance(markerfilter, list)
+            for i, m in enumerate(markerfilter):
+                if not self.is_marker(m):
+                    raise Exception('invalid param: markerfilter[{}], {}'.format(i, m))
+        # construct refdict from markerfilter
+        refdict = {}
+        for m in markerfilter:
+            c = self.marker2code(m)
+            
+        #
+        unigrams = text.split()
+        bigrams = self.bigrams(unigrams)
+        markers = []
+        for word in unigrams:
+            ms = self.word2markers()
+        pass
