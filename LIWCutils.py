@@ -35,6 +35,10 @@ class LIWCdict(object):
 
         self._code2lexemes = {}
         self._lexeme2codes = {}
+        self._lexemes = {} # lexemes w/o wildcard
+        self._lexemes_wc = {} # lexemes w/ wildcard
+        self._lexemes_wc_keys = [] # store the keys of _lexemes_wc
+
         with open(dicfile, 'r') as fr:
             for line in fr:
                 line = line.strip()
@@ -52,7 +56,35 @@ class LIWCdict(object):
                             self._code2lexemes[c].append(lexeme)
                         else:
                             self._code2lexemes[c] = [lexeme]
+                    # add to _lexemes and _lexemes_wc
+                    if '*' in lexeme:
+                        self._lexemes_wc[lexeme] = codes
+                    else:
+                        self._lexemes[lexeme] = codes
+        # sort _lexemes_wc_keys alphabetically (the default liwcdic2007.dic is already sorted)
+        self._lexemes_wc_keys = sorted(self._lexemes_wc.keys())
 
+    ##
+    # binary search within _lexemes_wc_keys
+    def search_wc_key(self, word):
+        """
+        word: a str object
+        """
+        first = 0
+        last = len(self._lexemes_wc_keys) - 1
+
+        while first <= last:
+            mid = (first + last) // 2
+            if fnmatch.fnmatch(word, self._lexemes_wc_keys[mid]):
+                return self._lexemes_wc[self._lexemes_wc_keys[mid]]
+            else:
+                if word < self._lexemes_wc_keys[mid]:
+                    last = mid - 1
+                else:
+                    first = mid + 1
+        return None
+
+    ##
     # the func that counts the number of LIWC markers
     def count_marker(self, material, marker, sep=' '):
         """
@@ -65,7 +97,7 @@ class LIWCdict(object):
         lexemes = self.marker_lexemes(marker)
         unigrams = material.split(sep)
         if len(unigrams) > 1:
-            bigrams = self.bigrams(nigrams)
+            bigrams = self.bigrams(unigrams)
             return self._count_list(unigrams, lexemes) + self._count_list(bigrams, lexemes)
         else:
             return self._count_list(unigrams, lexemes)
@@ -150,35 +182,25 @@ class LIWCdict(object):
 
     ##
     # return the codes of a word
-    def word2codes(self, word, refdict=None):
+    def word2codes(self, word):
         """
         word: str
         """
         assert isinstance(word, str)
-        if refdict is None:
-            refdict = self._lexeme2codes
-        if word in refdict:
-            return refdict[word]
+        if word in self._lexemes:
+            return self._lexemes[word]
         else:
-            matched_lexemes = [lex for lex in refdict.keys() if fnmatch.fnmatch(word, lex)]
-            codes = []
-            for lex in matched_lexemes:
-                codes += refdict[lex]
-            if len(codes) == 0:
-                return None
-            else:
-                return codes
+            codes = self.search_wc_key(word)
+            return codes
 
     ##
     # return the markers (short) of a word
-    def word2markers(self, word, refdict=None):
+    def word2markers(self, word):
         """
         word: str
         """
         assert isinstance(word, str)
-        if refdict is None:
-            refdict = self._lexeme2codes
-        codes = self.word2codes(word, refdict)
+        codes = self.word2codes(word)
         if codes is None:
             return None
         else:
@@ -236,17 +258,18 @@ class LIWCdict(object):
                     raise Exception('invalid param: markers[{}], {}'.format(i, m))
 
         # get the marker series
-        unigrams = text.split()
-        bigrams = self.bigrams(unigrams)
         markers = []
+        unigrams = text.split()
         for word in unigrams:
             ms = self.word2markers(word)
             if ms is not None:
                 markers.append(ms)
-        for word in bigrams:
-            ms = self.word2markers(word)
-            if ms is not None:
-                markers.append(ms)
+        if len(unigrams) > 1:
+            bigrams = self.bigrams(unigrams)
+            for word in bigrams:
+                ms = self.word2markers(word)
+                if ms is not None:
+                    markers.append(ms)
 
         markers = list(itertools.chain.from_iterable(markers))
         if markerfilter is not None:
