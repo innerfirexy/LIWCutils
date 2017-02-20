@@ -1,3 +1,6 @@
 __pycache__
 liwccat2007.txt
 liwcdic2007.dic
+
+build/
+LIWCutils/

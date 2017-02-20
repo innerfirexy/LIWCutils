@@ -2,7 +2,7 @@
 # Yang Xu
 # 2/20/2017
 
-from LIWCutils import LIWCdict
+from LIWCutils.LIWCutils import LIWCdict
 import fnmatch
 
 ##
