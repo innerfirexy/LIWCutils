@@ -6,23 +6,25 @@ import fnmatch
 import pickle
 import re
 import sys
+import itertools
+
 
 # the LIWCdict class
 class LIWCdict(object):
-    def __init__(self, cat_file, dic_file):
+    def __init__(self, catfile, dicfile):
         """
-        cat_file: the LIWC category file, e.g., liwccat2007.txt
-        dic_file: the LIWC dictionary file, e.g., liwcdic2007.dic
+        catfile: the LIWC category file, e.g., liwccat2007.txt
+        dicfile: the LIWC dictionary file, e.g., liwcdic2007.dic
         """
-        assert isinstance(cat_file, str)
-        assert isinstance(dic_file, str)
+        assert isinstance(catfile, str)
+        assert isinstance(dicfile, str)
 
-        self._catfile = cat_file
-        self._dicfile = dic_file
+        self._catfile = catfile
+        self._dicfile = dicfile
 
         self._code2marker = {}
         self._marker2code = {}
-        with open(cat_file, 'r') as fr:
+        with open(catfile, 'r') as fr:
             text = ''.join(fr.readlines())
             ms = re.findall(r'[0-9]+\t[a-z]+@', text)
             for m in ms:
@@ -33,7 +35,7 @@ class LIWCdict(object):
 
         self._code2lexemes = {}
         self._lexeme2codes = {}
-        with open(dic_file, 'r') as fr:
+        with open(dicfile, 'r') as fr:
             for line in fr:
                 line = line.strip()
                 items = line.split('\t')
@@ -132,12 +134,29 @@ class LIWCdict(object):
         return word in self._lexeme2codes
 
     ##
+    # return the subset of self._lexeme2codes, by including a subset of markers only
+    def sublex2codes(self, markers):
+        """
+        markers: the markers of the lexemes to be included
+        """
+        assert isinstance(markers, list)
+        for i, m in enumerate(markers):
+            if not self.is_marker(m):
+                raise Exception('invalid param: markers[{}], {}'.format(i, m))
+        # get the subset
+        lexemes = itertools.chain.from_iterable(self._code2lexemes[self._marker2code[m]] for m in markers)
+        subdict = {lex: self._lexeme2codes[lex] for lex in lexemes}
+        return subdict
+
+    ##
     # return the codes of a word
-    def word2codes(self, word, refdict=self._lexeme2codes):
+    def word2codes(self, word, refdict=None):
         """
         word: str
         """
         assert isinstance(word, str)
+        if refdict is None:
+            refdict = self._lexeme2codes
         if word in refdict:
             return refdict[word]
         else:
@@ -152,12 +171,14 @@ class LIWCdict(object):
 
     ##
     # return the markers (short) of a word
-    def word2markers(self, word):
+    def word2markers(self, word, refdict=None):
         """
         word: str
         """
         assert isinstance(word, str)
-        codes = self.word2codes(word)
+        if refdict is None:
+            refdict = self._lexeme2codes
+        codes = self.word2codes(word, refdict)
         if codes is None:
             return None
         else:
@@ -194,7 +215,7 @@ class LIWCdict(object):
         code: an int of marker code
         return: a str representing the marker
         """
-        assert isinstance(marker, int)
+        assert isinstance(code, int)
         if code in self._code2marker:
             return self._code2marker[code]
         else:
@@ -205,24 +226,29 @@ class LIWCdict(object):
     def text2markers(self, text, markerfilter=None):
         """
         text: str
-        markerfilter: a list of str
+        refdict: a list of str
         """
         assert isinstance(text, str)
-        # check param
         if markerfilter is not None:
             assert isinstance(markerfilter, list)
             for i, m in enumerate(markerfilter):
                 if not self.is_marker(m):
-                    raise Exception('invalid param: markerfilter[{}], {}'.format(i, m))
-        # construct refdict from markerfilter
-        refdict = {}
-        for m in markerfilter:
-            c = self.marker2code(m)
-            
-        #
+                    raise Exception('invalid param: markers[{}], {}'.format(i, m))
+
+        # get the marker series
         unigrams = text.split()
         bigrams = self.bigrams(unigrams)
         markers = []
         for word in unigrams:
-            ms = self.word2markers()
-        pass
+            ms = self.word2markers(word)
+            if ms is not None:
+                markers.append(ms)
+        for word in bigrams:
+            ms = self.word2markers(word)
+            if ms is not None:
+                markers.append(ms)
+
+        markers = list(itertools.chain.from_iterable(markers))
+        if markerfilter is not None:
+            markers = [m for m in markers if m in markerfilter]
+        return markers
