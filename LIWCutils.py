@@ -208,14 +208,19 @@ class LIWCdict(object):
 
     ##
     # the func that get the corresponding lexemes of certain markers
-    def marker_lexemes(self, marker):
+    def marker_lexemes(self, marker, include_wc=True):
         """
         marker: string of LIWC marker (short version)
+        include_wc: include wildcard lexemes or not
         return: a list of str representing the lexemes, when marker is valid. Otherwise, return None
         """
         assert isinstance(marker, str)
         if marker in self._marker2code:
-            return self._code2lexemes[self._marker2code[marker]]
+            lexemes =  self._code2lexemes[self._marker2code[marker]]
+            if include_wc:
+                return lexemes
+            else:
+                return [w for w in lexemes if w not in self._lexemes_wc]
         else:
             return None
 
@@ -255,7 +260,7 @@ class LIWCdict(object):
             assert isinstance(markerfilter, list)
             for i, m in enumerate(markerfilter):
                 if not self.is_marker(m):
-                    raise Exception('invalid param: markers[{}], {}'.format(i, m))
+                    raise Exception('invalid param: markerfilter[{}], {}'.format(i, m))
 
         # get the marker series
         markers = []
@@ -275,3 +280,22 @@ class LIWCdict(object):
         if markerfilter is not None:
             markers = [m for m in markers if m in markerfilter]
         return markers
+
+    ##
+    # Get all the lemmas of a marker
+    # def get_lemmas(self, marker):
+    #     assert isinstance(marker, str)
+    #     if not self.is_marker(m):
+    #         raise Exception('invalid param: "{}" is not a marker'.format(marker))
+    #
+    #     pass
+
+    ##
+    # get all markers
+    def get_markers(self, sort=None):
+        if sort=='A':
+            return sorted(self._marker2code.keys())
+        elif sort=='D':
+            return sorted(self._marker2code.keys(), reverse=True)
+        else:
+            return list(self._marker2code.keys())
