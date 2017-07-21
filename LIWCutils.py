@@ -68,7 +68,7 @@ class LIWCdict(object):
         # sort _lexemes_wc_keys alphabetically (the default liwcdic2007.dic is already sorted)
         self._lexemes_wc_keys = sorted(self._lexemes_wc.keys())
 
-    ##
+
     # binary search within _lexemes_wc_keys
     def search_wc_key(self, word):
         """
@@ -88,7 +88,7 @@ class LIWCdict(object):
                     first = mid + 1
         return None
 
-    ##
+
     # the func that counts the number of LIWC markers
     def count_marker(self, material, marker, sep=' '):
         """
@@ -105,6 +105,7 @@ class LIWCdict(object):
             return self._count_list(unigrams, lexemes) + self._count_list(bigrams, lexemes)
         else:
             return self._count_list(unigrams, lexemes)
+
 
     # the func that counts in batch
     def count_marker_batch(self, material, markers, sep=' '):
@@ -123,6 +124,7 @@ class LIWCdict(object):
                 results.append(self._count_list(unigrams, lexemes))
         return results
 
+
     # the func called in marker_count
     def _count_list(self, words, lexemes):
         """
@@ -131,8 +133,9 @@ class LIWCdict(object):
         """
         assert isinstance(words, list)
         assert isinstance(lexemes, list)
-        words = [w.lower() for w in words]
+
         return sum([len(fnmatch.filter(words, lex)) for lex in lexemes])
+
 
     # generate bigrams list from unigram list
     def bigrams(self, unigrams):
@@ -145,6 +148,7 @@ class LIWCdict(object):
             bigrams.append(unigrams[i] + unigrams[i+1])
         return bigrams
 
+
     # check if marker is valid
     def is_marker(self, marker):
         """
@@ -152,6 +156,7 @@ class LIWCdict(object):
         """
         assert isinstance(marker, str)
         return marker in self._marker2code
+
 
     # check if code is valid
     def is_code(self, code):
@@ -161,6 +166,7 @@ class LIWCdict(object):
         assert isinstance(code, int)
         return code in self._code2marker
 
+
     # check if a word is a valid lexeme
     def is_lexeme(self, word):
         """
@@ -169,7 +175,7 @@ class LIWCdict(object):
         assert isinstance(word, str)
         return word in self._lexeme2codes
 
-    ##
+
     # return the subset of self._lexeme2codes, by including a subset of markers only
     def sublex2codes(self, markers):
         """
@@ -184,7 +190,7 @@ class LIWCdict(object):
         subdict = {lex: self._lexeme2codes[lex] for lex in lexemes}
         return subdict
 
-    ##
+
     # return the codes of a word
     def word2codes(self, word):
         """
@@ -197,7 +203,7 @@ class LIWCdict(object):
             codes = self.search_wc_key(word)
             return codes
 
-    ##
+
     # return the markers (short) of a word
     def word2markers(self, word):
         """
@@ -210,7 +216,7 @@ class LIWCdict(object):
         else:
             return [self.code2marker(c) for c in codes]
 
-    ##
+
     # the func that get the corresponding lexemes of certain markers
     def marker_lexemes(self, marker, include_wc=True):
         """
@@ -228,6 +234,7 @@ class LIWCdict(object):
         else:
             return None
 
+
     # the func that convert a marker string (short version) to its LIWC code
     def marker2code(self, marker):
         """
@@ -239,6 +246,7 @@ class LIWCdict(object):
             return self._marker2code[marker]
         else:
             return None
+
 
     # the func that convert a LIWC code to its marker string (short or full version)
     def code2marker(self, code):
@@ -252,7 +260,7 @@ class LIWCdict(object):
         else:
             return None
 
-    ##
+
     # the function that return a piece of text to a series of makers
     def text2markers(self, text, markerfilter=None):
         """
@@ -294,7 +302,7 @@ class LIWCdict(object):
     #
     #     pass
 
-    ##
+
     # get all markers
     def get_markers(self, sort=None):
         if sort=='A':
