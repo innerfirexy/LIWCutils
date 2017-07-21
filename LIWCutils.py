@@ -11,6 +11,7 @@ import pickle
 import re
 import sys
 import itertools
+import collections
 
 
 # the LIWCdict class
@@ -271,7 +272,7 @@ class LIWCdict(object):
         """
         assert isinstance(text, str)
         if markerfilter is not None:
-            assert isinstance(markerfilter, list)
+            assert isinstance(markerfilter, collections.Iterable)
             for i, m in enumerate(markerfilter):
                 if not self.is_marker(m):
                     raise Exception('invalid param: markerfilter[{}], {}'.format(i, m))
