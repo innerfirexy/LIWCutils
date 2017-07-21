@@ -116,10 +116,12 @@ class LIWCdict(object):
         if len(unigrams) > 1:
             bigrams = self.bigrams(unigrams)
             for m in markers:
+                assert self.is_marker(m)
                 lexemes = self.marker_lexemes(m)
                 results.append(self._count_list(unigrams, lexemes) + self._count_list(bigrams, lexemes))
         else:
             for m in markers:
+                assert self.is_marker(m)
                 lexemes = self.marker_lexemes(m)
                 results.append(self._count_list(unigrams, lexemes))
         return results
