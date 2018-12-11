@@ -53,7 +53,7 @@ class LIWCdict(object):
                     codes = [int(c) for c in items[1:]]
                 except Exception as e:
                     print(line)
-                    raise
+                    raise e
                 else:
                     self._lexeme2codes[lexeme] = codes
                     for c in codes:

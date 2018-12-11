@@ -4,3 +4,5 @@ liwcdic2007.dic
 
 build/
 LIWCutils/
+.vscode/
+.DS_store
