@@ -267,8 +267,11 @@ class LIWCdict(object):
     # the function that return a piece of text to a series of makers
     def text2markers(self, text, markerfilter=None):
         """
-        text: str
-        refdict: a list of str
+        Args:
+        text -- str
+        markerfilter -- list of markers to be exlucded
+        Return:
+        markers -- a list of str
         """
         assert isinstance(text, str)
         if markerfilter is not None:
