@@ -128,6 +128,35 @@ def test2():
     # tentat single quote #: 1
 
 
+def test_new_text2markers():
+    catfile = 'liwccat2007.txt'
+    dicfile = 'liwcdic2007.dic'
+    liwc = LIWCdict(catfile, dicfile)
+
+    text1 = 'you could try the tonbridge historical society URL even if the website does n\'t have more info they may have other sources listed or members might be able to help i \'m not a member'
+    print('text:')
+    print(text1)
+    print('length of text: {}'.format(len(text1.split())))
+
+    # Test with 14 commonly used markers
+    markers_14 = ['adverb', 'article', 'auxverb', 'certain', 'conj', 'discrep', 'excl', 'incl', 'ipron', 'negate', 'ppron', 'preps', 'quant', 'tentat']
+
+    markers = liwc.text2markers(text1, marker_limit=None, markers_incl=markers_14)
+    print('markers:')
+    print(markers)
+    print('number of markers: {}'.format(len(markers)))
+
+    # Test with some random text
+    print()
+    text2 = 'fasjdfsjf dfsfiow  fdfsdf ioioif fsdfff'
+    print('text2:')
+    print(text2)
+
+    markers = liwc.text2markers(text2, marker_limit=None, markers_incl=markers_14)
+    print('markers:')
+    print(markers)
+
+
 
 # main
 if __name__ == '__main__':
@@ -136,4 +165,6 @@ if __name__ == '__main__':
     # print(timeit.repeat("test1()", number=1, repeat=10, setup="from __main__ import test1"))
 
     # test2
-    test2()
+    # test2()
+
+    test_new_text2markers()

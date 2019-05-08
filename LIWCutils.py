@@ -5,6 +5,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
+from typing import List
 
 import fnmatch
 import pickle
@@ -195,29 +196,32 @@ class LIWCdict(object):
 
 
     # return the codes of a word
-    def word2codes(self, word):
+    def word2codes(self, word, limit:int=None):
         """
         word: str
         """
         assert isinstance(word, str)
         if word in self._lexemes:
-            return self._lexemes[word]
+            return self._lexemes[word][:limit]
         else:
             codes = self.search_wc_key(word)
+            if codes:
+                codes = codes[:limit]
             return codes
 
 
     # return the markers (short) of a word
-    def word2markers(self, word):
+    def word2markers(self, word, limit:int=None):
         """
         word: str
         """
         assert isinstance(word, str)
-        codes = self.word2codes(word)
+
+        codes = self.word2codes(word, limit)
         if codes is None:
             return None
         else:
-            return [self.code2marker(c) for c in codes]
+            return [self.code2marker(c) for c in codes[:limit]]
 
 
     # the func that get the corresponding lexemes of certain markers
@@ -265,7 +269,12 @@ class LIWCdict(object):
 
 
     # the function that return a piece of text to a series of makers
-    def text2markers(self, text, markerfilter=None):
+    def text2markers(self, text:str, 
+            unigram_only:bool=True, 
+            marker_limit:int=None, 
+            markers_incl:List[str]=None, 
+            markers_excl=None,
+            filler='x'):
         """
         Args:
         text -- str
@@ -274,29 +283,57 @@ class LIWCdict(object):
         markers -- a list of str
         """
         assert isinstance(text, str)
-        if markerfilter is not None:
-            assert isinstance(markerfilter, collections.Iterable)
-            for i, m in enumerate(markerfilter):
+        markers_incl_set = set()
+        markers_excl_set = set()
+        if markers_incl is not None:
+            assert isinstance(markers_incl, collections.Iterable)
+            for i, m in enumerate(markers_incl):
                 if not self.is_marker(m):
-                    raise Exception('invalid param: markerfilter[{}], {}'.format(i, m))
+                    raise Exception('invalid param: markers_incl[{}], {}'.format(i, m))
+            markers_incl_set = set(markers_incl)
+
+        if markers_excl is not None:
+            assert isinstance(markers_excl, collections.Iterable)
+            for i, m in enumerate(markers_excl):
+                if not self.is_marker(m):
+                    raise Exception('invalid param: markers_excl[{}], {}'.format(i, m))
+            markers_excl_set = set(markers_excl)
 
         # get the marker series
         markers = []
         unigrams = text.split()
         for word in unigrams:
-            ms = self.word2markers(word)
-            if ms is not None:
+            ms = self.word2markers(word, marker_limit)
+            if not ms:
+                markers.append([filler])
+                continue
+            if markers_incl_set:
+                if len(markers_incl_set.intersection(set(ms))) > 0:
+                    markers.append(list(markers_incl_set.intersection(set(ms))))
+                else:
+                    markers.append([filler])
+            else:
                 markers.append(ms)
-        if len(unigrams) > 1:
+
+        if not unigram_only and len(unigrams) > 1:
             bigrams = self.bigrams(unigrams)
             for word in bigrams:
-                ms = self.word2markers(word)
-                if ms is not None:
+                ms = self.word2markers(word, marker_limit)
+                if not ms:
+                    markers.append([filler])
+                    continue
+                if markers_incl_set:
+                    if len(markers_incl_set.intersection(set(ms))) > 0:
+                        markers.append(list(markers_incl_set.intersection(set(ms))))
+                    else:
+                        markers.append([filler])
+                else:
                     markers.append(ms)
 
         markers = list(itertools.chain.from_iterable(markers))
-        if markerfilter is not None:
-            markers = [m for m in markers if m in markerfilter]
+        if markers_excl_set:
+            markers = [m for m in markers if m not in markers_excl_set]
+
         return markers
 
     ##
